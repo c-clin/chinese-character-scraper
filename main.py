@@ -18,11 +18,11 @@ def extract_data_from_character_url(character_url):
     fonts = [tag for tag in parsed_response.find_all('font') if tag.get('size') == '+2']
 
     images = [tag for tag in parsed_response.find_all('img') if 'http://chinese-characters.org/images/' in tag.get('src')]
-    datum['simplified_image'] = [img for img in images if f'{image_url_prefix}/2simp/' in img['src']][0]
-    datum['traditional_image'] = [img for img in images if f'{image_url_prefix}/1trad/' in img['src']][0]
-    datum['ancient1_image'] = [img for img in images if f'{image_url_prefix}/1ancient/' in img['src']][0]
-    datum['ancient2_image'] = [img for img in images if f'{image_url_prefix}/2ancient/' in img['src']][0]
-    datum['archaic_images'] = [img for img in images if f'{image_url_prefix}/1archaic/' in img['src']]
+    datum['simplified_images'] = [img.get('src') for img in images if f'{image_url_prefix}/2simp/' in img['src']]
+    datum['traditional_images'] = [img.get('src') for img in images if f'{image_url_prefix}/1trad/' in img['src']]
+    datum['ancient1_images'] = [img.get('src') for img in images if f'{image_url_prefix}/1ancient/' in img['src']]
+    datum['ancient2_images'] = [img.get('src') for img in images if f'{image_url_prefix}/2ancient/' in img['src']]
+    datum['archaic_images'] = [img.get('src') for img in images if f'{image_url_prefix}/1archaic/' in img['src']]
     
 
     titles_td = parsed_response.find_all('td', background='../../images/table4-2-1.png')[0]
@@ -80,7 +80,10 @@ def main():
             parsed_response = BeautifulSoup(requests.get(sound_url).content)
             characters_urls = [tag['href'] for tag in parsed_response.find_all('a') if 'meaning' in tag['href']]
             for character_url in characters_urls:
-                data.append(extract_data_from_character_url(character_url))
+                try:
+                    data[character_url] = extract_data_from_character_url(character_url)
+                except Exception:
+                    pass
 
 
 if __name__ == '__main__':
