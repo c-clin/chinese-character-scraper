@@ -6,9 +6,9 @@ from lxml import html
 base_url = 'http://chinese-characters.org/pinyin'
 image_url_prefix = 'http://chinese-characters.org/images'
 
-character_url = 'http://chinese-characters.org/meaning/5/5446.html'
 unavail_url = 'unavail.png'
 
+characters_urls = set()
 data = dict()
 
 def extract_links_and_text(tag):
@@ -59,6 +59,8 @@ def extract_data_from_character_url(character_url):
     # TODO: parse links, topological sort vocab words
     datum['mnemonic'] = list(tr_mnemonic.children)[-1].text.rstrip().lstrip()
 
+    # TODO: get character as text for lookup
+
     # TODO: get etymology
 
     return datum
@@ -72,13 +74,14 @@ def main():
         sounds_urls = [tag['href'] for tag in parsed_response.find_all('a') if 'pinyin' in tag['href']]
         for sound_url in sounds_urls:
             parsed_response = BeautifulSoup(requests.get(sound_url).content, features='lxml')
-            characters_urls = [tag['href'] for tag in parsed_response.find_all('a') if 'meaning' in tag['href']]
-            for character_url in characters_urls:
-                print(f'character_url = {character_url}')
-                try:
-                    data[character_url] = extract_data_from_character_url(character_url)
-                except Exception:
-                    pass
+            characters_urls |= {tag['href'] for tag in parsed_response.find_all('a') if 'meaning' in tag['href']}
+    
+    for character_url in characters_urls:
+        print(f'character_url = {character_url}')
+        try:
+            data[character_url] = extract_data_from_character_url(character_url)
+        except Exception:
+            pass
 
 
 if __name__ == '__main__':
